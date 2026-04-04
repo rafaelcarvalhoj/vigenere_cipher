@@ -1,15 +1,5 @@
 import unicodedata
 
-# Este trabalho explora a cifra de Vigenère, tendo duas partes: o cifrado/decifrador e o ataque de
-# recuperação de senha por análise de frequência
-
-# A lógica central visa tratar as letras como números de 0 a 25, e usar operações de módulo (%26)
-# para garantir que o alfabeto "rode"
-# Se não for uma letra, simplesmente mantenha os espaços e caracteres especiais dentro do resultado pra frase ficar com a frase legível
-
-# OBS: Nessa primeira versão só trabalhei com o alfabeto clássico de 26 letras, não considerei os acentos ou "Ç", então caso use, vão ser removidos.
-# (Não sei se precisa uma versão pra cobrir os 256 caracteres da tabela ASCII)
-
 class VigenereCipher:
     
     @staticmethod
