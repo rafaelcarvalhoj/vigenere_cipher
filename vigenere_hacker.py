@@ -35,11 +35,54 @@ class VigenereHacker:
         pass
     
     @staticmethod
-    def _guess_key_length(cyphertext: str) -> int:
+    def _calculate_ic(text: str) -> float:
         """
-        Implementa o Kasiski ou tenta adivinhar o tamanho da chave por força bruta (1 a 20) / ou outro método.
+        Calcula o Índice de Coicidência (IC) de uma string.
+        O IC mede a probabilidade de duas letras sorteadas aleatoriamente serem iguais 
         """
-        pass
+        
+        n = len(text)
+        if n <= 1:
+            return 0.0
+        
+        freqs = [0] * 26
+        for char in text:
+            freqs[ord(char) - ord('A')] += 1
+        
+        # Essa é basicamente a fórmula do IC: Somatório de f * (f - 1) / (n * (n - 1))
+        sum_frequence = sum(f * (f - 1) for f in freqs)
+        ic = sum_frequence / (n * (n - 1))
+        
+        return ic
+    
+    @staticmethod
+    def _guess_key_length(cyphertext: str, max_length: int = 20) -> int:
+        """
+        Tenta adivinhar o tamanho da chave testando de 1 até max_length.
+        O tamanho correto agrupa letras que sofreram o mesmo deslocamento,
+        fazendo o IC saltar de ~0.038 (aleatório) para ~0.07 (idioma real).
+        """
+        
+        safe_limit = min(max_length, len(cyphertext) // 20)
+        safe_limit = max(safe_limit, 3)
+        
+        best_length = 1
+        greater_average_ic = 0.0
+        
+        for k_len in range(1, safe_limit + 1):
+            sum_ic_column = 0.0
+            
+            for i in range(k_len):
+                column = cyphertext[i::k_len]
+                sum_ic_column += VigenereHacker._calculate_ic(column)
+            
+            average_ic = sum_ic_column / k_len
+            
+            if average_ic > greater_average_ic:     
+                greater_average_ic = average_ic
+                best_length = k_len
+                    
+        return best_length
         
     @staticmethod
     def hack(cyphertext: str, language: str = 'PT') -> dict:
@@ -52,5 +95,16 @@ class VigenereHacker:
         # 3. Fatiar o texto em colunas (como se fosse várias cifras de cesár)
         # 4. Chamar _break_single_column para cada coluna
         # 5. Juntar as letras para formar a chave final
-        # 6. Usar VigenereCypher.decrypt para gerar o texto final=
+        # 6. Usar VigenereCypher.decrypt para gerar o texto final
         pass
+    
+    
+
+if __name__ == "__main__":
+
+    texto_cifrado = "Q JRTDWMGCZ DSNJUGPC XE IGJWDUSUO OYAMKCZ M, ANUAAGUFQVPHM, S DUGONHUXZBOKSO TI ANUMWF C WVXOHGANQI I R EOXSCYXAOU XI VPQCJTQL DTINEEEWIK. ACCGZI Y JROWTAAHYS BKY WV GBKGNJLAX UG GFPHQFEDNED TCJVTSVLEI JOOUG MEVSZSGYL EX JYQGQ FMSL, SIMAQLXZNVIFDE GOXUHXFU OBJALYS OU PMUGCKZACUDLI, I ULG TWJTQFENU FETQG YME, DI PLIMEUQ, DWVEHCAX IY HZUGWDVUL PPBI HZUHIFCYUMPDNS WKGQUO. QFEX TCWJQ, OA JETYS DEWMRKG KJIQLAX SIQLPWLSDUM DP YHXVTSAKE SIMFC, IRUG WVVILCDFEM IEECVLRQG AAECS V FWIDOWI SZRLI KGAIK EIJENYZMTQG, AMPULAYTI FRTFMARQM FTICGRU RM NIPCNSQHGR. Q HZSBQFHZ HYQFVC, QEPKFSTEHEUQ DWJ EIMAD JYGEQZWYIQM, TLCVID TSLWFYHIF E UQSKSVLE SIRAELEKKJW, GFULENUHHF HZMPIRCLTTUHV G FMVUPCNOE I XVODW VEIJECTCGRFC ME DUMLZSUQVPHWK UHVAYEM.."
+    texto_limpo = "".join(char for char in VigenereCipher._normalize(texto_cifrado) if char.isalpha())
+
+    tamanho_estimado = VigenereHacker._guess_key_length(texto_limpo)
+
+    print(f"O tamanho estimado da chave é: {tamanho_estimado}")
