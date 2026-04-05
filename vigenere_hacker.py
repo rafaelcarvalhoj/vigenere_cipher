@@ -32,7 +32,37 @@ class VigenereHacker:
         Testa as 26 letras para uma única coluna e retorna a letra da chave 
         que gerou a menor diferença estatística, junto com a pontuação (score).
         """
-        pass
+        freq_table = VigenereHacker._get_frequency_table(language)
+        n = len(column_text)
+        
+        counts = [0] * 26
+        for char in column_text:
+            counts[ord(char) - ord('A')] += 1
+        
+        best_char = 'A'
+        min_error = float('inf')
+        
+        # Testando os 26 deslocamentos possíveis (0 = A, 1 = B) em cada local da chave
+        for shift in range(26):
+            current_error = 0.0
+            
+            for p in range(26):
+                c = (p + shift) % 26
+                
+                # Qual porcentagem apareceu no texto cifrado?
+                observed_porcentage = (counts[c] / n) * 100               
+                
+                # Qual porcentagem deveria ter no idioma original?
+                original_char = chr(p + ord('A'))                   
+                expected_pct = freq_table[original_char]
+                
+                current_error += abs(observed_porcentage - expected_pct)
+                
+            if current_error < min_error:
+                min_error = current_error
+                best_char = chr(shift + ord('A'))
+                 
+        return best_char, min_error
     
     @staticmethod
     def _calculate_ic(text: str) -> float:
@@ -93,11 +123,24 @@ class VigenereHacker:
         Método principal do ataque.
         Retorna um dicionário com a chave encontrada e o texto decifrado.
         """
-        # 1. Limpar o texto (usando o _normalize)
-        # 2. Descobrir o tamanho da chave (_guess_key_length)
-        # 3. Fatiar o texto em colunas (como se fosse várias cifras de cesár)
-        # 4. Chamar _break_single_column para cada coluna
-        # 5. Juntar as letras para formar a chave final
-        # 6. Usar VigenereCypher.decrypt para gerar o texto final
-        pass
-    
+        text_only = "".join(char for char in cyphertext.upper() if char.isalpha())
+        
+        lenght_key, _ = VigenereHacker._guess_key_length(text_only)
+        discovery_key = ""
+        
+        # Dividir a senha em várias Cifras de César (dividir pra conquistar)
+        for i in range(lenght_key):
+            column = text_only[i::lenght_key]
+            
+            key_char, _ = VigenereHacker._break_single_column(column, language)
+            discovery_key += key_char 
+            
+        # Agora que temos a key, só decifrar novamente a mensagem cifrada
+        decrypted_message = VigenereCipher.decrypt(cyphertext, discovery_key)
+        
+        return {
+            "key": discovery_key,
+            "text": decrypted_message,
+            "length": lenght_key
+        }
+        
