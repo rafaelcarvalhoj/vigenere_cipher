@@ -69,6 +69,8 @@ class VigenereHacker:
         best_length = 1
         greater_average_ic = 0.0
         
+        lenght_candidates = set([1])
+        
         for k_len in range(1, safe_limit + 1):
             sum_ic_column = 0.0
             
@@ -81,8 +83,9 @@ class VigenereHacker:
             if average_ic > greater_average_ic:     
                 greater_average_ic = average_ic
                 best_length = k_len
+                lenght_candidates.add(best_length)
                     
-        return best_length
+        return best_length, list(lenght_candidates)
         
     @staticmethod
     def hack(cyphertext: str, language: str = 'PT') -> dict:
@@ -98,13 +101,3 @@ class VigenereHacker:
         # 6. Usar VigenereCypher.decrypt para gerar o texto final
         pass
     
-    
-
-if __name__ == "__main__":
-
-    texto_cifrado = "Q JRTDWMGCZ DSNJUGPC XE IGJWDUSUO OYAMKCZ M, ANUAAGUFQVPHM, S DUGONHUXZBOKSO TI ANUMWF C WVXOHGANQI I R EOXSCYXAOU XI VPQCJTQL DTINEEEWIK. ACCGZI Y JROWTAAHYS BKY WV GBKGNJLAX UG GFPHQFEDNED TCJVTSVLEI JOOUG MEVSZSGYL EX JYQGQ FMSL, SIMAQLXZNVIFDE GOXUHXFU OBJALYS OU PMUGCKZACUDLI, I ULG TWJTQFENU FETQG YME, DI PLIMEUQ, DWVEHCAX IY HZUGWDVUL PPBI HZUHIFCYUMPDNS WKGQUO. QFEX TCWJQ, OA JETYS DEWMRKG KJIQLAX SIQLPWLSDUM DP YHXVTSAKE SIMFC, IRUG WVVILCDFEM IEECVLRQG AAECS V FWIDOWI SZRLI KGAIK EIJENYZMTQG, AMPULAYTI FRTFMARQM FTICGRU RM NIPCNSQHGR. Q HZSBQFHZ HYQFVC, QEPKFSTEHEUQ DWJ EIMAD JYGEQZWYIQM, TLCVID TSLWFYHIF E UQSKSVLE SIRAELEKKJW, GFULENUHHF HZMPIRCLTTUHV G FMVUPCNOE I XVODW VEIJECTCGRFC ME DUMLZSUQVPHWK UHVAYEM.."
-    texto_limpo = "".join(char for char in VigenereCipher._normalize(texto_cifrado) if char.isalpha())
-
-    tamanho_estimado = VigenereHacker._guess_key_length(texto_limpo)
-
-    print(f"O tamanho estimado da chave é: {tamanho_estimado}")
